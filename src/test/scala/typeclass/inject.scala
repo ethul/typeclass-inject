@@ -1,12 +1,7 @@
-# Inject
+package typeclass
 
-A scala implementation of the `Inject` typeclass from [Data types a la carte](http://www.staff.science.uu.nl/~swier004/Publications/DataTypesALaCarte.pdf) (Swierstra 2008).
-
-# Example
-
-```scala
 import scalaz.{Coproduct, Free, Functor}, Free.Return
-import typeclass.Inject, Inject._
+import Inject._
 
 sealed trait Test1Algebra[A]
 case class Test1[A](keys: Seq[String], h: Int => A) extends Test1Algebra[A]
@@ -85,4 +80,3 @@ object Test {
       c <- test3[T]("cc" :: Nil)
     } yield (a, b, c)
 }
-```
