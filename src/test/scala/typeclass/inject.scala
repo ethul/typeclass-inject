@@ -66,7 +66,7 @@ object Test3Algebra extends Test3AlgebraInstances with Test3AlgebraFunctions
 
 
 
-object Test {
+object TestInj {
   import Test1Algebra._, Test2Algebra._, Test3Algebra._
 
   type C0[A] = Coproduct[Test1Algebra, Test2Algebra, A]
@@ -79,4 +79,29 @@ object Test {
       b <- test2[T]("bb" :: Nil)
       c <- test3[T]("cc" :: Nil)
     } yield (a, b, c)
+}
+
+object TestPrj {
+  import scalaz.syntax.all._
+  import Test1Algebra._, Test2Algebra._, Test3Algebra._
+
+  type C0[A] = Coproduct[Test1Algebra, Test2Algebra, A]
+  type C1[A] = Coproduct[Test3Algebra, C0, A]
+  type T[A] = C1[A]
+
+  def distr[F[_]: Functor, A](t: Free[F, A])
+    (implicit
+      I0: Inject[Test1Algebra, F],
+      I1: Inject[Test2Algebra, F],
+      I2: Inject[Test3Algebra, F]): Option[Free[F, A]] =
+        for {
+          Test1(x, h) <- match_[F, Test1Algebra, A](t)
+          Test2(y, k) <- match_[F, Test2Algebra, A](h(x.length))
+          Test3(z, l) <- match_[F, Test3Algebra, A](k((x ++ y).length))
+        } yield l((x ++ y ++ z).length)
+
+  val res =
+    distr(test1[T](Seq("a")) >> test2[T](Seq("b")) >> test3[T](Seq("c")))
+
+  assert(res == Some(Return[T, Int](3)))
 }
